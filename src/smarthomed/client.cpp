@@ -1,5 +1,5 @@
 #include <QDataStream>
-#include "QTcpSocket"
+#include <QTcpSocket>
 
 #include "client.h"
 
