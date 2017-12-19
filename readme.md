@@ -1,3 +1,3 @@
 # smarthome
 
-Home automation base on arduino, raspberry pi & qt applications
+Home automation base on arduino, arduino mega, raspberry pi & qt applications
