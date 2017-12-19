@@ -1,5 +1,6 @@
+#include <QCoreApplication>
 #include <QDebug>
-
+#include <QSettings>
 #include <QThread>
 
 #include "homeworker.h"
@@ -7,21 +8,21 @@
 
 void HomeWorker::init()
 {
+    QSettings settings(QSettings::SystemScope, qApp->organizationName(), qApp->applicationName(), this);
+    if (!settings.contains("arduino mega one serial port name")) settings.setValue("arduino mega one serial port name", "/dev/tty.usbmodem411");
+    QString arduinoMegaOneSerialPortName = settings.value("arduino mega one serial port name", "/dev/tty.usbmodem411").toString();
+
     arduinoMegaOne = new QSerialPort;
     arduinoMegaOne->setBaudRate(QSerialPort::Baud115200, QSerialPort::AllDirections);
-    arduinoMegaOne->setPortName("/dev/tty.usbmodem411");
+    arduinoMegaOne->setPortName(arduinoMegaOneSerialPortName);
 
     connect(arduinoMegaOne, &QSerialPort::readyRead, this, &HomeWorker::arduinoMegaOneDataReceived);
 
     if (!arduinoMegaOne->open(QIODevice::ReadWrite)) {
-        qInfo() << "Can not open arduino mega one serial port on port:" <<  arduinoMegaOne->portName() << "with error:" << arduinoMegaOne->errorString();
+        qWarning() << "Can not open arduino mega one serial port on port:" <<  arduinoMegaOne->portName() << "with error:" << arduinoMegaOne->errorString();
         return;
     }
-    qDebug() << "Open arduino mega one serial port";
-
-//    int nbrByteWrite = arduinoMegaOne->write("&relay 01 on$");
-//    qDebug() << "number" << nbrByteWrite;
-//    arduinoMegaOne->flush();
+    qInfo() << "Open arduino mega one serial port";
 }
 
 void HomeWorker::setRelay(int card, int relay, bool state)
@@ -52,8 +53,7 @@ void HomeWorker::processDataReceived(int card)
     QStringList splitEndLine = bufferMegaOne.split("\r\n");
     foreach (QString line, splitEndLine) {
         if (line.contains("Temperature: ")) {
-
-            qDebug() << line << line.indexOf("Temperature: ") << line.mid(line.indexOf("Temperature: ") + 13, 5) << line.mid(line.indexOf("Temperature: ") + 13, 5).toDouble();
+            //qDebug() << line << line.indexOf("Temperature: ") << line.mid(line.indexOf("Temperature: ") + 13, 5) << line.mid(line.indexOf("Temperature: ") + 13, 5).toDouble();
             emit temperatureChanged(line.mid(line.indexOf("Temperature: ") + 13, 5).toDouble());
         }
         if (line.contains("Humidity: ")) {
@@ -77,7 +77,7 @@ void HomeWorker::processDataReceived(int card)
             }
         }
 
-        // On place la dernière ligne dans le buffer
+        // Add the last line into the buffer
         if (line == splitEndLine.last()) bufferMegaOne = line;
     }
 
