@@ -1,4 +1,5 @@
 #include <QDataStream>
+#include <QStringList>
 #include <QTcpSocket>
 
 #include "client.h"
@@ -73,22 +74,34 @@ void ClientWorker::handleSigHup()
 
 void ClientWorker::temperatureChanged(double value)
 {
-
+    if (m_majorVersion == 1 && m_minorVersion == 0) {
+        m_socket->write(QString("temperatureChanged(%1)\r\n").arg(value).toUtf8());
+        m_socket->flush();
+    }
 }
 
 void ClientWorker::humidityChanged(double value)
 {
-
+    if (m_majorVersion == 1 && m_minorVersion == 0) {
+        m_socket->write(QString("humidityChanged(%1)\r\n").arg(value).toUtf8());
+        m_socket->flush();
+    }
 }
 
 void ClientWorker::heatChanged(double value)
 {
-
+    if (m_majorVersion == 1 && m_minorVersion == 0) {
+        m_socket->write(QString("heatChanged(%1)\r\n").arg(value).toUtf8());
+        m_socket->flush();
+    }
 }
 
 void ClientWorker::dewChanged(double value)
 {
-
+    if (m_majorVersion == 1 && m_minorVersion == 0) {
+        m_socket->write(QString("dewChanged(%1)\r\n").arg(value).toUtf8());
+        m_socket->flush();
+    }
 }
 
 void ClientWorker::relayChanged(int card, int relay, bool relayState)
@@ -163,9 +176,11 @@ void ClientWorker::parse_1_0(const QByteArray &data)
 {
     qDebug() << "Client 1.0:" << ((data.size() > 128)? data.mid(0, 128) + "...": data);
     QString line = QString(data);
-    if (line.compare("setRelay(1,0)\r\n", Qt::CaseInsensitive) == 0) {
-        m_socket->write("ok setRelay(1,0) received\r\n");
-        emit setRelay(1, 1, true);
+    if (line.startsWith("setRelay(", Qt::CaseInsensitive)) {
+        QStringList values = line.remove("setRelay(").remove(")").split(",");
+        if (values.size() != 3) return;
+        emit setRelay(values.at(0).toInt(), values.at(1).toInt(), values.at(2).toInt());
+        m_socket->write(QString("ok setRelay(%1,%2,%3) received\r\n").arg(values.at(0).toInt()).arg(values.at(1).toInt()).arg(values.at(2).toInt()).toUtf8());
     } else {
         m_socket->write("bad command unknown or arguments invalid\r\n");
     }

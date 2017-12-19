@@ -1,10 +1,10 @@
-QT += qml quick quickcontrols2 serialport
+QT += network qml quick quickcontrols2
 
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    homeworker.cpp \
-    homecontroller.cpp
+    clientcontroller.cpp \
+    clientworker.cpp
 
 RESOURCES += qml.qrc
 
@@ -15,5 +15,5 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    homeworker.h \
-    homecontroller.h
+    clientcontroller.h \
+    clientworker.h

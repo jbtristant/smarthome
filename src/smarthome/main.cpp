@@ -2,7 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
-#include "homecontroller.h"
+#include "clientcontroller.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("smarthome");
     app.setApplicationVersion("0.9.0");
 
-    HomeController homeController;
+    ClientController homeController;
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("homeController", &homeController);
