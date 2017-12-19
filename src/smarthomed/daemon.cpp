@@ -177,14 +177,14 @@ void Daemon::run()
         // INPUT
         connect(snHup, &QSocketNotifier::activated, m_server, &Server::handleSigHup);
 
-        // DROWSILOGIC TO SERVER
+        // HOMECONTROLLER TO SERVER
         connect(m_homeController, &HomeController::temperatureChanged, m_server, &Server::temperatureChanged);
         connect(m_homeController, &HomeController::humidityChanged, m_server, &Server::humidityChanged);
         connect(m_homeController, &HomeController::heatChanged, m_server, &Server::heatChanged);
         connect(m_homeController, &HomeController::dewChanged, m_server, &Server::dewChanged);
         connect(m_homeController, &HomeController::relayChanged, m_server, &Server::relayChanged);
 
-        // SERVER TO DROWSILOGIC
+        // SERVER TO HOMECONTROLLER
         connect(m_server, &Server::setRelay, m_homeController, &HomeController::setRelay);
 
     } else {
