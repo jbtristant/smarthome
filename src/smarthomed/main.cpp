@@ -2,12 +2,15 @@
 #include <QCoreApplication>
 #include <QDebug>
 
+#include "common.h"
 #include "daemon.h"
 
 int main(int argc, char *argv[])
 {
-    //qInstallMessageHandler(Daemon::qtMessageOutput);
     QCoreApplication app(argc, argv);
+
+    qRegisterMetaType<Rooms::Room>("Rooms::Room");
+
     app.setOrganizationName("WaldoCorp");
     app.setOrganizationDomain("waldocorp.tristant.be");
     app.setApplicationName("smarthomed");

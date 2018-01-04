@@ -38,7 +38,7 @@ Client::~Client()
 ClientWorker::ClientWorker(int socketDescriptor, QObject *parent)
     : QObject(parent), m_socketDescriptor(socketDescriptor), m_majorVersion(-1), m_minorVersion(-1)
 {
-
+    qRegisterMetaType<Rooms::Room>("Rooms::Room");
 }
 
 ClientWorker::~ClientWorker()
@@ -72,34 +72,34 @@ void ClientWorker::handleSigHup()
     m_socket->flush();
 }
 
-void ClientWorker::temperatureChanged(double value)
+void ClientWorker::temperatureChanged(Rooms::Room room, double value)
 {
     if (m_majorVersion == 1 && m_minorVersion == 0) {
-        m_socket->write(QString("temperatureChanged(%1)\r\n").arg(value).toUtf8());
+        m_socket->write(QString("temperatureChanged(%1,%2)\r\n").arg(room).arg(value).toUtf8());
         m_socket->flush();
     }
 }
 
-void ClientWorker::humidityChanged(double value)
+void ClientWorker::humidityChanged(Rooms::Room room, double value)
 {
     if (m_majorVersion == 1 && m_minorVersion == 0) {
-        m_socket->write(QString("humidityChanged(%1)\r\n").arg(value).toUtf8());
+        m_socket->write(QString("humidityChanged(%1,%2)\r\n").arg(room).arg(value).toUtf8());
         m_socket->flush();
     }
 }
 
-void ClientWorker::heatChanged(double value)
+void ClientWorker::heatChanged(Rooms::Room room, double value)
 {
     if (m_majorVersion == 1 && m_minorVersion == 0) {
-        m_socket->write(QString("heatChanged(%1)\r\n").arg(value).toUtf8());
+        m_socket->write(QString("heatChanged(%1,%2)\r\n").arg(room).arg(value).toUtf8());
         m_socket->flush();
     }
 }
 
-void ClientWorker::dewChanged(double value)
+void ClientWorker::dewChanged(Rooms::Room room, double value)
 {
     if (m_majorVersion == 1 && m_minorVersion == 0) {
-        m_socket->write(QString("dewChanged(%1)\r\n").arg(value).toUtf8());
+        m_socket->write(QString("dewChanged(%1,%2)\r\n").arg(room).arg(value).toUtf8());
         m_socket->flush();
     }
 }

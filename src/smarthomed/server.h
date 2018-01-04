@@ -4,6 +4,8 @@
 #include <QTcpServer>
 #include <QVector>
 
+#include "common.h"
+
 class Client;
 
 class Server : public QTcpServer
@@ -19,10 +21,10 @@ signals:
     void handleSigHup();
 
     // INPUT
-    void temperatureChanged(double value);
-    void humidityChanged(double value);
-    void heatChanged(double value);
-    void dewChanged(double value);
+    void temperatureChanged(Rooms::Room room, double value);
+    void humidityChanged(Rooms::Room room, double value);
+    void heatChanged(Rooms::Room room, double value);
+    void dewChanged(Rooms::Room room, double value);
     void relayChanged(int card, int relay, bool relayState);
 
     // OUTPUT

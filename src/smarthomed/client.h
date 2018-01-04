@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include <QThread>
 
+#include "common.h"
+
 class Client : public QObject
 {
     Q_OBJECT
@@ -17,10 +19,10 @@ signals:
     void write(QByteArray data);
     void handleSigHup();
 
-    void temperatureChanged(double value);
-    void humidityChanged(double value);
-    void heatChanged(double value);
-    void dewChanged(double value);
+    void temperatureChanged(Rooms::Room room, double value);
+    void humidityChanged(Rooms::Room room, double value);
+    void heatChanged(Rooms::Room room, double value);
+    void dewChanged(Rooms::Room room, double value);
     void relayChanged(int card, int relay, bool relayState);
 
 
@@ -56,10 +58,10 @@ public slots:
     void handleSigHup();
 
     // 1.0
-    void temperatureChanged(double value);
-    void humidityChanged(double value);
-    void heatChanged(double value);
-    void dewChanged(double value);
+    void temperatureChanged(Rooms::Room room, double value);
+    void humidityChanged(Rooms::Room room, double value);
+    void heatChanged(Rooms::Room room, double value);
+    void dewChanged(Rooms::Room room, double value);
     void relayChanged(int card, int relay, bool relayState);
 
 private slots:

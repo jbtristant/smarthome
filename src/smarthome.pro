@@ -6,9 +6,10 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS = smarthomed \
-	  smarthome
+SUBDIRS = common \
+          smarthomed \
+          smarthome
+
 
 CONFIG += ordered
 CONFIG += qtc_runnable
-

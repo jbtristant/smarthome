@@ -4,7 +4,8 @@
 
 ClientWorker::ClientWorker(QObject *parent) : QObject(parent)
 {
-
+    qRegisterMetaType<Rooms::Room>("Rooms::Room");
+    qRegisterMetaType<HeatingState>("HeatingState");
 }
 
 ClientWorker::~ClientWorker()
@@ -25,6 +26,11 @@ void ClientWorker::init()
     if (!m_socket->waitForConnected()) {
         qWarning() << "Connection to server failed with error:" << m_socket->errorString();
     }
+
+    emit heatingStateListAppend(HeatingState("Normal", "red"));
+    emit heatingStateListAppend(HeatingState("Vacances", "green"));
+    emit heatingStateListAppend(HeatingState("Fête", "blue"));
+    emit heatingStateListAppend(HeatingState("Absent", "yellow"));
 }
 
 void ClientWorker::close()
@@ -73,26 +79,33 @@ void ClientWorker::readyRead()
 void ClientWorker::parse(const QByteArray &data)
 {
     QString line = QString(data);
-    if (line.startsWith("relayChanged(", Qt::CaseInsensitive)) {
+    if (line.contains("ok version 1.0")) {
+        m_socket->write("askHeatingStateList\r\n");
+    }
+    else if (line.startsWith("relayChanged(", Qt::CaseInsensitive)) {
         QStringList values = line.remove("relayChanged(").remove(")").split(",");
         if (values.size() != 3) return;
         emit relayChanged(values.at(0).toInt(), values.at(1).toInt(), values.at(2).toInt());
     }
     else if (line.startsWith("humidityChanged(", Qt::CaseInsensitive)) {
-        QString value = line.remove("humidityChanged(").remove(")");
-        emit humidityChanged(value.toDouble());
+        QStringList values = line.remove("humidityChanged(").remove(")").split(",");
+        if (values.size() != 2) return;
+        emit humidityChanged((Rooms::Room)values.at(0).toInt(), values.at(1).toDouble());
     }
     else if (line.startsWith("temperatureChanged(", Qt::CaseInsensitive)) {
-        QString value = line.remove("temperatureChanged(").remove(")");
-        emit temperatureChanged(value.toDouble());
+        QStringList values = line.remove("temperatureChanged(").remove(")").split(",");
+        if (values.size() != 2) return;
+        emit temperatureChanged((Rooms::Room)values.at(0).toInt(), values.at(1).toDouble());
     }
     else if (line.startsWith("heatChanged(", Qt::CaseInsensitive)) {
-        QString value = line.remove("heatChanged(").remove(")");
-        emit heatChanged(value.toDouble());
+        QStringList values = line.remove("heatChanged(").remove(")").split(",");
+        if (values.size() != 2) return;
+        emit heatChanged((Rooms::Room)values.at(0).toInt(), values.at(1).toDouble());
     }
     else if (line.startsWith("dewChanged(", Qt::CaseInsensitive)) {
-        QString value = line.remove("dewChanged(").remove(")");
-        emit dewChanged(value.toDouble());
+        QStringList values = line.remove("dewChanged(").remove(")").split(",");
+        if (values.size() != 2) return;
+        emit dewChanged((Rooms::Room)values.at(0).toInt(), values.at(1).toDouble());
     } else {
         qDebug() << "Client 1.0:" << ((data.size() > 128)? data.mid(0, 128) + "...": data);
     }

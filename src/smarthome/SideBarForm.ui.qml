@@ -1,5 +1,6 @@
 import QtQuick 2.4
 import QtQuick.Controls 2.0
+import QtQuick.Controls.Styles 1.4
 
 PageBackground {
     width: 200
@@ -96,6 +97,8 @@ PageBackground {
         y: 490
         width: 183
         height: 48
+        model: homeController.heatingStateList
+        textRole: "name"
     }
 
     Button {

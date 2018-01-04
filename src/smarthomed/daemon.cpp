@@ -49,6 +49,9 @@ void Daemon::qtMessageOutput(QtMsgType type, const QMessageLogContext &context, 
     case QtDebugMsg:
         fprintf(stderr, "DEBUG: %s\n", msg.toUtf8().data());
         break;
+    case QtInfoMsg:
+        fprintf(stderr, "INFO: %s\n", msg.toUtf8().data());
+        break;
     case QtWarningMsg:
         fprintf(stderr, "WARNING: %s\n", msg.toUtf8().data());
         break;

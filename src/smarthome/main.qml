@@ -25,6 +25,7 @@ ApplicationWindow {
         }
 
         Heating {
+            id: heating
 
         }
 

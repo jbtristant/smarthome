@@ -1,9 +1,14 @@
 import QtQuick 2.4
 import QtQuick.Dialogs 1.2
+import RoomsEnums 1.0
 
 SideBarForm {
     id: sideBar
-    comboBox.model: ["Normal", "Vacation", "Party", "Test"]
+        //["Normal", "Vacances", "Fête", "Absent"]
+
+    comboBox.onCurrentIndexChanged: {
+        console.debug("model " + comboBox.currentIndex)
+    }
 
     btnConfigure.onClicked: {
         dialog.open()
@@ -35,13 +40,13 @@ SideBarForm {
     Connections {
         target: homeController
         onTemperatureChanged: {
-            lblTemperatureText = value + "°"
+            if (room === Rooms.Salon) lblTemperatureText = value + "°"
         }
         onHumidityChanged: {
-            lblHumidityText = value + " %"
+            if (room === Rooms.Salon) lblHumidityText = value + " %"
         }
         onHeatChanged: {
-            lblHeatText = value + "°"
+            if (room === Rooms.Salon) lblHeatText = value + "°"
         }
     }
 

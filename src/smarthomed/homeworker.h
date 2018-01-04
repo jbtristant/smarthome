@@ -4,17 +4,19 @@
 #include <QObject>
 #include <QSerialPort>
 
+#include "common.h"
+
 class HomeWorker : public QObject
 {
     Q_OBJECT
 public:
-    explicit HomeWorker(QObject *parent = 0) : QObject(parent) {}
+    explicit HomeWorker(QObject *parent = 0);
 
 signals:
-    void temperatureChanged(double value);
-    void humidityChanged(double value);
-    void heatChanged(double value);
-    void dewChanged(double value);
+    void temperatureChanged(Rooms::Room room, double value);
+    void humidityChanged(Rooms::Room room, double value);
+    void heatChanged(Rooms::Room room, double value);
+    void dewChanged(Rooms::Room room, double value);
     void relayChanged(int card, int relay, bool relayState);
 
 public slots:

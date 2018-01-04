@@ -1,5 +1,6 @@
 #include "clientcontroller.h"
 #include "clientworker.h"
+#include "heatingstate.h"
 
 ClientController::ClientController(QObject *parent) : QObject(parent)
 {
@@ -16,6 +17,8 @@ ClientController::ClientController(QObject *parent) : QObject(parent)
     connect(worker, &ClientWorker::heatChanged, this, &ClientController::heatChanged);
     connect(worker, &ClientWorker::dewChanged, this, &ClientController::dewChanged);
     connect(worker, &ClientWorker::relayChanged, this, &ClientController::relayChanged);
+    connect(worker, &ClientWorker::heatingStateListAppend, this, &ClientController::onHeatingStateListAppend);
+
 
     workerThread.start();
 }
@@ -24,4 +27,24 @@ ClientController::~ClientController()
 {
     workerThread.quit();
     workerThread.wait();
+}
+
+QList<QObject *> ClientController::heatingStateList() const
+{
+    return m_heatingStateList;
+}
+
+void ClientController::setHeatingStateList(QList<QObject *> heatingStateList)
+{
+    if (m_heatingStateList == heatingStateList)
+        return;
+
+    m_heatingStateList = heatingStateList;
+    emit heatingStateListChanged(m_heatingStateList);
+}
+
+void ClientController::onHeatingStateListAppend(const HeatingState &heatingState)
+{
+    m_heatingStateList.append(new HeatingState(heatingState.name(), heatingState.color()));
+    emit heatingStateListChanged(m_heatingStateList);
 }
