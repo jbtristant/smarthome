@@ -180,7 +180,7 @@ void Daemon::run()
     qInfo() << "Run" << qApp->applicationName();
     m_server = new Server(this);
     m_homeController = new HomeController(this);
-    m_cron = new QCron("0 15 * * 1-5 *");
+    m_cron = new QCron("22 15 * * 1-5 *");
 
     connect(m_cron, &QCron::activated, this, &Daemon::cronJob);
 
