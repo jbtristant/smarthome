@@ -11,6 +11,7 @@ QT_END_NAMESPACE
 
 class HomeController;
 class Server;
+class QCron;
 
 class Daemon : public QObject
 {
@@ -30,6 +31,7 @@ private:
     quint16 m_serverPort;
     HomeController *m_homeController;
     Server *m_server;
+    QCron *m_cron;
 
     explicit Daemon(QObject *parent = 0);
 
@@ -46,8 +48,9 @@ public slots:
     void handleSigHup();
     void handleSigTerm();
 
-protected:
+protected slots:
     void handleSignals();
+    void cronJob();
 
 private:
     static int sigHupFd[2];

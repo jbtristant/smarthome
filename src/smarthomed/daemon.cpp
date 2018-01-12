@@ -9,6 +9,7 @@
 #include "daemon.h"
 #include "homecontroller.h"
 #include "server.h"
+#include "qcron.hpp"
 
 #include "waitsignalhelper.h"
 
@@ -150,6 +151,11 @@ void Daemon::handleSignals()
     connect(snTerm, SIGNAL(activated(int)), this, SLOT(handleSigTerm()));
 }
 
+void Daemon::cronJob()
+{
+    qInfo() << "Cron @" << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+}
+
 int Daemon::runInTerminal()
 {
     handleSignals();
@@ -174,6 +180,9 @@ void Daemon::run()
     qInfo() << "Run" << qApp->applicationName();
     m_server = new Server(this);
     m_homeController = new HomeController(this);
+    m_cron = new QCron("0 15 * * 1-5 *");
+
+    connect(m_cron, &QCron::activated, this, &Daemon::cronJob);
 
     if (m_server->listen(QHostAddress::Any, m_serverPort)) {
         qInfo() << "Server listenning on any address with port:" << m_server->serverPort();

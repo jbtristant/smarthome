@@ -1,0 +1,3 @@
+[submodule "vendorsrc/qcron"]
+	path = vendorsrc/qcron
+	url = https://github.com/mankalas/qcron.git
