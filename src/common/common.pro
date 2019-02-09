@@ -23,11 +23,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         common.cpp \
-    heatingstate.cpp
+        data/listmodel.cpp \
+        data/heatingitem.cpp \
+        heatingstate.cpp
 
 HEADERS += \
         common.h \
-    heatingstate.h
+        data/listmodel.h \
+        data/heatingitem.h \
+        heatingstate.h
+
 unix {
     target.path = /usr/lib
     INSTALLS += target

@@ -12,7 +12,7 @@ PageBackground {
     property alias lblDayText: lblDay.text
     property alias lblTimeText: lblTime.text
     property alias btnConfigure: btnConfigure
-    property alias comboBox: comboBox
+    property alias comboBoxHeating: comboBoxHeating
     property alias switchLumieres: switchLumieres
 
     CustomLabel {
@@ -92,13 +92,13 @@ PageBackground {
     }
 
     ComboBox {
-        id: comboBox
+        id: comboBoxHeating
         x: 9
         y: 490
         width: 183
         height: 48
-        model: homeController.heatingStateList
-        textRole: "name"
+        model: heatingListModel
+        textRole: "heating_name"
     }
 
     Button {

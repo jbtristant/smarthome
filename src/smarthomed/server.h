@@ -26,9 +26,13 @@ signals:
     void heatChanged(Rooms::Room room, double value);
     void dewChanged(Rooms::Room room, double value);
     void relayChanged(int card, int relay, bool relayState);
+    void sendHeatingStateList(const QString &serializedHeatingList);
+    void heatingStateChanged(const QString &id);
 
     // OUTPUT
     void setRelay(int card, int relay, bool state);
+    void askHeatingStateList();
+    void setHeatingState(const QString &id);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;

@@ -20,11 +20,15 @@ Client::Client(int socketDescriptor, QObject *parent)
     connect(this, &Client::heatChanged, worker, &ClientWorker::heatChanged);
     connect(this, &Client::dewChanged, worker, &ClientWorker::dewChanged);
     connect(this, &Client::relayChanged, worker, &ClientWorker::relayChanged);
+    connect(this, &Client::sendHeatingStateList, worker, &ClientWorker::sendHeatingStateList);
+    connect(this, &Client::heatingStateChanged, worker, &ClientWorker::heatingStateChanged);
 
     // OUTPUT
     connect(worker, &ClientWorker::disconnected, this, &Client::disconnected);
     connect(worker, &ClientWorker::error, this, &Client::error);
     connect(worker, &ClientWorker::setRelay, this, &Client::setRelay);
+    connect(worker, &ClientWorker::askHeatingStateList, this, &Client::askHeatingStateList);
+    connect(worker, &ClientWorker::setHeatingState, this, &Client::setHeatingState);
 
     m_workerThread.start();
 }
@@ -112,6 +116,22 @@ void ClientWorker::relayChanged(int card, int relay, bool relayState)
     }
 }
 
+void ClientWorker::sendHeatingStateList(const QString &serializedList)
+{
+    if (m_majorVersion == 1 && m_minorVersion == 0) {
+        m_socket->write(QString("heatingStateList(%1)\r\n").arg(serializedList).toUtf8());
+        m_socket->flush();
+    }
+}
+
+void ClientWorker::heatingStateChanged(const QString &id)
+{
+    if (m_majorVersion == 1 && m_minorVersion == 0) {
+        m_socket->write(QString("heatingStateChanged(%1)\r\n").arg(id).toUtf8());
+        m_socket->flush();
+    }
+}
+
 void ClientWorker::readyRead()
 {
     QByteArray bytes;
@@ -181,6 +201,13 @@ void ClientWorker::parse_1_0(const QByteArray &data)
         if (values.size() != 3) return;
         emit setRelay(values.at(0).toInt(), values.at(1).toInt(), values.at(2).toInt());
         m_socket->write(QString("ok setRelay(%1,%2,%3) received\r\n").arg(values.at(0).toInt()).arg(values.at(1).toInt()).arg(values.at(2).toInt()).toUtf8());
+    } else if (line.startsWith("askHeatingStateList", Qt::CaseInsensitive)) {
+        emit askHeatingStateList();
+        m_socket->write("ok askHeatingStateList() received\r\n");
+    } else if (line.startsWith("setHeatingState(", Qt::CaseInsensitive)) {
+        QString value = line.remove("setHeatingState(").remove(")\r\n");
+        emit setHeatingState(value);
+        m_socket->write(QString("ok setHeatingState(%1) received\r\n").arg(value).toUtf8());
     } else {
         m_socket->write("bad command unknown or arguments invalid\r\n");
     }

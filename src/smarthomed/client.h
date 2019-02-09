@@ -24,6 +24,8 @@ signals:
     void heatChanged(Rooms::Room room, double value);
     void dewChanged(Rooms::Room room, double value);
     void relayChanged(int card, int relay, bool relayState);
+    void sendHeatingStateList(const QString &serializedList);
+    void heatingStateChanged(const QString &id);
 
 
     // OUTPUT
@@ -31,6 +33,8 @@ signals:
     void error(QTcpSocket::SocketError socketError);
 
     void setRelay(int card, int relay, bool state);
+    void askHeatingStateList();
+    void setHeatingState(const QString &id);
 
 private:
     QThread m_workerThread;
@@ -50,7 +54,8 @@ signals:
 
     // 1.0
     void setRelay(int card, int relay, bool state);
-
+    void askHeatingStateList();
+    void setHeatingState(const QString &id);
 
 public slots:
     void init();
@@ -63,6 +68,8 @@ public slots:
     void heatChanged(Rooms::Room room, double value);
     void dewChanged(Rooms::Room room, double value);
     void relayChanged(int card, int relay, bool relayState);
+    void sendHeatingStateList(const QString &serializedList);
+    void heatingStateChanged(const QString &id);
 
 private slots:
     void readyRead();

@@ -11,13 +11,15 @@ ClientController::ClientController(QObject *parent) : QObject(parent)
     connect(&workerThread, &QThread::started, worker, &ClientWorker::init);
 
     connect(this, &ClientController::setRelay, worker, &ClientWorker::setRelay);
+    connect(this, &ClientController::setHeatingState, worker, &ClientWorker::setHeatingState);
 
     connect(worker, &ClientWorker::temperatureChanged, this, &ClientController::temperatureChanged);
     connect(worker, &ClientWorker::humidityChanged, this, &ClientController::humidityChanged);
     connect(worker, &ClientWorker::heatChanged, this, &ClientController::heatChanged);
     connect(worker, &ClientWorker::dewChanged, this, &ClientController::dewChanged);
     connect(worker, &ClientWorker::relayChanged, this, &ClientController::relayChanged);
-    connect(worker, &ClientWorker::heatingStateListAppend, this, &ClientController::onHeatingStateListAppend);
+    connect(worker, &ClientWorker::addHeating, this, &ClientController::addHeating);
+    connect(worker, &ClientWorker::heatingStateChanged, this, &ClientController::heatingStateChanged);
 
 
     workerThread.start();
@@ -27,24 +29,4 @@ ClientController::~ClientController()
 {
     workerThread.quit();
     workerThread.wait();
-}
-
-QList<QObject *> ClientController::heatingStateList() const
-{
-    return m_heatingStateList;
-}
-
-void ClientController::setHeatingStateList(QList<QObject *> heatingStateList)
-{
-    if (m_heatingStateList == heatingStateList)
-        return;
-
-    m_heatingStateList = heatingStateList;
-    emit heatingStateListChanged(m_heatingStateList);
-}
-
-void ClientController::onHeatingStateListAppend(const HeatingState &heatingState)
-{
-    m_heatingStateList.append(new HeatingState(heatingState.name(), heatingState.color()));
-    emit heatingStateListChanged(m_heatingStateList);
 }

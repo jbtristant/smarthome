@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "clientcontroller.h"
+#include "data/heatingitem.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,8 +12,10 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     qRegisterMetaType<Rooms::Room>("Rooms::Room");
-    qRegisterMetaType<HeatingState>("HeatingState");
     qmlRegisterType<Rooms>("RoomsEnums", 1, 0, "Rooms");
+    qRegisterMetaType<HeatingItem::HeatingRoles>("HeatingItem::HeatingRoles");
+    qmlRegisterType<HeatingItem>("HeatingRolesEnums", 1, 0, "HeatingRoles");
+
 
     app.setOrganizationName("JB Tristant");
     app.setOrganizationDomain("tristant.be");
@@ -21,10 +24,13 @@ int main(int argc, char *argv[])
     app.setApplicationVersion("0.9.0");
 
     ClientController homeController;
+    HeatingListModel heatingListModel(qApp);
+
+    QObject::connect(&homeController, &ClientController::addHeating, &heatingListModel, &HeatingListModel::addHeating);
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("homeController", &homeController);
-    //engine.rootContext()->setContextProperty("heatingStateModel", QVariant::fromValue(dataList));
+    engine.rootContext()->setContextProperty("heatingListModel", &heatingListModel);
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 
 

@@ -5,7 +5,6 @@
 ClientWorker::ClientWorker(QObject *parent) : QObject(parent)
 {
     qRegisterMetaType<Rooms::Room>("Rooms::Room");
-    qRegisterMetaType<HeatingState>("HeatingState");
 }
 
 ClientWorker::~ClientWorker()
@@ -26,11 +25,6 @@ void ClientWorker::init()
     if (!m_socket->waitForConnected()) {
         qWarning() << "Connection to server failed with error:" << m_socket->errorString();
     }
-
-    emit heatingStateListAppend(HeatingState("Normal", "red"));
-    emit heatingStateListAppend(HeatingState("Vacances", "green"));
-    emit heatingStateListAppend(HeatingState("Fête", "blue"));
-    emit heatingStateListAppend(HeatingState("Absent", "yellow"));
 }
 
 void ClientWorker::close()
@@ -45,6 +39,12 @@ void ClientWorker::setRelay(int card, int relay, bool state)
 {
     if (m_socket->state() == QAbstractSocket::ConnectedState)
         m_socket->write(QString("setRelay(%1,%2,%3)\r\n").arg(card).arg(relay).arg(state).toUtf8());
+}
+
+void ClientWorker::setHeatingState(const QString &id)
+{
+    if (m_socket->state() == QAbstractSocket::ConnectedState)
+        m_socket->write(QString("setHeatingState(%1)\r\n").arg(id).toUtf8());
 }
 
 void ClientWorker::serverConnected()
@@ -106,6 +106,16 @@ void ClientWorker::parse(const QByteArray &data)
         QStringList values = line.remove("dewChanged(").remove(")").split(",");
         if (values.size() != 2) return;
         emit dewChanged((Rooms::Room)values.at(0).toInt(), values.at(1).toDouble());
+    } else if (line.startsWith("heatingStateList(", Qt::CaseInsensitive)) {
+        QStringList values = line.remove("heatingStateList(").remove(")\r\n").split("|");
+        foreach (QString heating, values) {
+            QStringList values = heating.split(";");
+            if (values.size() != 2) return;
+            emit addHeating(values.at(0), values.at(1));
+        }
+    } else if (line.startsWith("heatingStateChanged(", Qt::CaseInsensitive)) {
+        QString value = line.remove("heatingStateChanged(").remove(")\r\n");
+            emit heatingStateChanged(value);
     } else {
         qDebug() << "Client 1.0:" << ((data.size() > 128)? data.mid(0, 128) + "...": data);
     }

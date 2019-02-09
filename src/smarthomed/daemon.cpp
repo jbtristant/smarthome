@@ -8,6 +8,7 @@
 
 #include "daemon.h"
 #include "homecontroller.h"
+#include "data/heatingitem.h"
 #include "server.h"
 #include "qcron.hpp"
 
@@ -156,6 +157,16 @@ void Daemon::cronJob()
     qInfo() << "Cron @" << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
 }
 
+void Daemon::newClient()
+{
+    m_server->heatingStateChanged(m_heatingState);
+}
+
+void Daemon::setHeatingStateReceived(const QString &id)
+{
+    m_heatingState = id;
+}
+
 int Daemon::runInTerminal()
 {
     handleSignals();
@@ -180,6 +191,12 @@ void Daemon::run()
     qInfo() << "Run" << qApp->applicationName();
     m_server = new Server(this);
     m_homeController = new HomeController(this);
+    m_heatingListModel = new HeatingListModel(this);
+    m_heatingListModel->addHeating("Normal", "1");
+    m_heatingListModel->addHeating("Vacances", "2");
+    m_heatingListModel->addHeating("Fête", "3");
+    m_heatingListModel->addHeating("Absent", "4");
+    m_heatingState = "1";
     m_cron = new QCron("22 15 * * 1-5 *");
 
     connect(m_cron, &QCron::activated, this, &Daemon::cronJob);
@@ -188,6 +205,7 @@ void Daemon::run()
         qInfo() << "Server listenning on any address with port:" << m_server->serverPort();
         // INPUT
         connect(snHup, &QSocketNotifier::activated, m_server, &Server::handleSigHup);
+
 
         // HOMECONTROLLER TO SERVER
         connect(m_homeController, &HomeController::temperatureChanged, m_server, &Server::temperatureChanged);
@@ -198,6 +216,16 @@ void Daemon::run()
 
         // SERVER TO HOMECONTROLLER
         connect(m_server, &Server::setRelay, m_homeController, &HomeController::setRelay);
+
+        // HEATINGLISTMODEL TO SERVER
+        connect(m_heatingListModel, &HeatingListModel::sendSerializedList, m_server, &Server::sendHeatingStateList);
+        connect(m_heatingListModel, &HeatingListModel::heatingStateChanged, m_server, &Server::heatingStateChanged);
+
+        // SERVER TO HEATINGLISTMODEL
+        connect(m_server, &Server::askHeatingStateList, m_heatingListModel, &HeatingListModel::askSerialiseList);
+
+        connect(m_server, &Server::askHeatingStateList, this, &Daemon::newClient);
+        connect(m_server, &Server::setHeatingState, this, &Daemon::setHeatingStateReceived);
 
     } else {
         qFatal(QString("Server failed to listen with error: \"%1\" on %2 port %3").arg(m_server->errorString())

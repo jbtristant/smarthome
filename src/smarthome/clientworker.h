@@ -5,7 +5,6 @@
 #include <QTcpSocket>
 
 #include "common.h"
-#include "heatingstate.h"
 
 
 class ClientWorker : public QObject
@@ -21,12 +20,14 @@ signals:
     void heatChanged(Rooms::Room room, double value);
     void dewChanged(Rooms::Room room, double value);
     void relayChanged(int card, int relay, bool relayState);
-    void heatingStateListAppend(const HeatingState &heatingState);
+    void addHeating(const QString &name, const QString &id);
+    void heatingStateChanged(const QString &id);
 
 public slots:
     void init();
     void close();
     void setRelay(int card, int relay, bool state);
+    void setHeatingState(const QString &id);
 
 protected slots:
     void serverConnected();

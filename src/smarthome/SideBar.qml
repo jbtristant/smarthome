@@ -1,13 +1,14 @@
 import QtQuick 2.4
 import QtQuick.Dialogs 1.2
 import RoomsEnums 1.0
+import HeatingRolesEnums 1.0
 
 SideBarForm {
     id: sideBar
         //["Normal", "Vacances", "Fête", "Absent"]
 
-    comboBox.onCurrentIndexChanged: {
-        console.debug("model " + comboBox.currentIndex)
+    comboBoxHeating.onCurrentIndexChanged: {
+        homeController.setHeatingState(heatingListModel.get(comboBoxHeating.currentIndex).id)
     }
 
     btnConfigure.onClicked: {
@@ -47,6 +48,9 @@ SideBarForm {
         }
         onHeatChanged: {
             if (room === Rooms.Salon) lblHeatText = value + "°"
+        }
+        onHeatingStateChanged: {
+            comboBoxHeating.currentIndex = heatingListModel.indexFromId(id)
         }
     }
 

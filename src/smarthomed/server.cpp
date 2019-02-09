@@ -33,9 +33,13 @@ void Server::incomingConnection(qintptr socketDescriptor)
     connect(this, &Server::heatChanged, client, &Client::heatChanged);
     connect(this, &Server::dewChanged, client, &Client::dewChanged);
     connect(this, &Server::relayChanged, client, &Client::relayChanged);
+    connect(this, &Server::sendHeatingStateList, client, &Client::sendHeatingStateList);
+    connect(this, &Server::heatingStateChanged, client, &Client::heatingStateChanged);
 
     // OUTPUT
     connect(client, &Client::setRelay, this, &Server::setRelay);
+    connect(client, &Client::askHeatingStateList, this, &Server::askHeatingStateList);
+    connect(client, &Client::setHeatingState, this, &Server::setHeatingState);
 
     m_clients.append(client);
 }

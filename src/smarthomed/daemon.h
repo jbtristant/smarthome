@@ -10,6 +10,7 @@ class QSocketNotifier;
 QT_END_NAMESPACE
 
 class HomeController;
+class HeatingListModel;
 class Server;
 class QCron;
 
@@ -30,6 +31,8 @@ public:
 private:
     quint16 m_serverPort;
     HomeController *m_homeController;
+    HeatingListModel *m_heatingListModel;
+    QString m_heatingState;
     Server *m_server;
     QCron *m_cron;
 
@@ -51,6 +54,9 @@ public slots:
 protected slots:
     void handleSignals();
     void cronJob();
+    void newClient();
+    void setHeatingStateReceived(const QString &id);
+
 
 private:
     static int sigHupFd[2];
