@@ -1,16 +1,41 @@
 
-#define SDBDHTPIN 48
-#define HALLDHTPIN 49
-#define BRDHTPIN 50
+// Define my lights
+#define NBRRELAI      9
+#define CHAMBRE_JB                0
+#define SALLE_DE_DOUCHE_MIRROIR   1
+#define SALLE_DE_DOUCHE_DOUCHE    2
+#define SALLE_DE_DOUCHE_CENTRAL   3
+#define SALLE_DE_DOUCHE_VENTILLATION 4
+#define CHAMBRE_AMI               5
+#define BUREAU                    6
+#define DRESSING                  7
+#define GRENIER                   8
+
+
+// Define my light switch
+#define NBRSW          4
+#define SALLE_DE_DOUCHE_MIRROIR     1
+#define SALLE_DE_DOUCHE_DOUCHE  2
+#define DRESSING           3
+#define HALL_HAUT        4
+
+
+// define my t°/humidy sensors
+#define SALLE_DE_DOUCHE_DHT 48
+#define HALL_DHT 49
+#define CHAMBRE_JB_DHT 50
 #define DHTTYPE DHT22
 
 #include <DHT.h>
 
+#include <pushbutton.h>
+#include <relay.h>
+
 unsigned long dhtTime = 0;
 
-DHT sdbdht(SDBDHTPIN, DHTTYPE);
-DHT halldht(HALLDHTPIN, DHTTYPE);
-DHT brdht(BRDHTPIN, DHTTYPE);
+DHT sdbdht(SALLE_DE_DOUCHE_DHT, DHTTYPE);
+DHT halldht(HALL_DHT, DHTTYPE);
+DHT brdht(CHAMBRE_JB_DHT, DHTTYPE);
 
 void setup() {
    Serial.begin(115200);

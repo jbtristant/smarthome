@@ -18,81 +18,75 @@
 // pull-up resistors on the data and clock signals.
 //
 
-#define NBRRELAI 26
+#define NBRRELAI 7
 
 // Define my lights
-#define SALON_DEVANT              0
-#define SALON_MILIEU              1
-#define SALON_ARRIERE             2
-#define HALL_BAS                  3
-#define HALL_ENTREE               4
-#define HALL_VESTIAIRE            5
-#define CUISINE_CENTRAL           6
-#define CUISINE_PLAN_DE_TRAVAIL   7
-#define CUISINE_PLAQUE_CUISSON    8
-#define BUANDERIE                 9
-#define TOILETTE                  10
-#define EXTERIEUR_CHEMIN_AVANT    11
-#define EXTERIEUR_CHEMIN_ARRIERE  12
-#define EXTERIEUR_ARRIERE         13
-#define EXTERIEUR_GARAGE_ARRIERE  14
-#define EXTERIEUR_GARAGE_AVANT    15
-#define CHAMBRE_JB                16
-#define SALLE_DE_DOUCHE_MIRROIR   17
-#define SALLE_DE_DOUCHE_DOUCHE    18
-#define SALLE_DE_DOUCHE_CENTRAL   19
-#define SALLE_DE_DOUCHE_VENTILLATION 20
-#define CHAMBRE_AMI               21
-#define BUREAU                    22
-#define DRESSING                  23
-#define GRENIER                   24
-#define CAVE                      25
+#define SALON                     0
+#define HALL_BAS                  1
+#define CUISINE_CENTRAL           2
+#define CUISINE_PLAN_DE_TRAVAIL   3
+#define EXTERIEUR_JARDIN          4
+#define EXTERIEUR_DEVANT          5
+#define CAVE                      6
 
-#define NBRSW 4
+#define NBRSW 12
 // Define my light switch
-#define SALON_HALL     1
-#define SALON_CUISINE  2
-#define HALL           3
-#define CUISINE        4
+#define SALON_1        0
+#define SALON_2        1
+#define CUISINE_1      2
+#define CUISINE_2      3
+#define CUISINE_3      4
+#define CUISINE_4      5
+#define HALL_1         6
+#define HALL_2         7
+#define HALL_3         8
+#define HALL_4         9
+#define TOILETTE_1     10
+#define TOILETTE_2     11
 
-#define DHTPIN 48
+#define DHTPIN 31
 #define DHTTYPE DHT22
 
 
 #include <DS3231.h>
-#include <DHT.h>
+//#include <DHT.h>
 
 #include <pushbutton.h>
-#include <relay.h>
+#include <Relay.h>
 
-Relay relay[NBRRELAI] = { Relay(22, SALON_DEVANT), Relay(23, SALON_MILIEU), Relay(24, SALON_ARRIERE), 
-                          Relay(25, HALL_BAS), Relay(26, HALL_ENTREE), Relay(27, HALL_VESTIAIRE), 
-                          Relay(28, CUISINE_CENTRAL), Relay(29, CUISINE_PLAN_DE_TRAVAIL), Relay(30, CUISINE_PLAQUE_CUISSON), 
-                          Relay(31, BUANDERIE), Relay(32, TOILETTE), 
-                          Relay(33, EXTERIEUR_CHEMIN_AVANT), Relay(34, EXTERIEUR_CHEMIN_ARRIERE), Relay(35, EXTERIEUR_ARRIERE), 
-                          Relay(36, EXTERIEUR_GARAGE_ARRIERE), Relay(37, EXTERIEUR_GARAGE_AVANT), 
-                          Relay(38, CHAMBRE_JB),
-                          Relay(39, SALLE_DE_DOUCHE_MIRROIR), Relay(40, SALLE_DE_DOUCHE_DOUCHE), Relay(41, SALLE_DE_DOUCHE_CENTRAL), 
-                          Relay(42, SALLE_DE_DOUCHE_VENTILLATION),
-                          Relay(43, CHAMBRE_AMI), Relay(44, BUREAU), Relay(45, DRESSING),
-                          Relay(46, GRENIER), Relay(47, CAVE) };
+Relay relay[NBRRELAI] = { Relay(22), // SALON 
+                          Relay(23), // HALL_BAS
+                          Relay(24), // CUISINE_CENTRAL
+                          Relay(25), // CUISINE_PLAN_DE_TRAVAIL
+                          Relay(26), // EXTERIEUR_JARDIN
+                          Relay(27), // EXTERIEUR_DEVANT 
+                          Relay(28) // CAVE
+                          };
 
-PushButton pushButton[NBRSW] = { PushButton(50, SALON_HALL), 
-                                 PushButton(51, SALON_CUISINE), 
-                                 PushButton(52, HALL),
-                                 PushButton(53, CUISINE)
+PushButton pushButton[NBRSW] = { PushButton(42, SALON_1), 
+                                 PushButton(43, SALON_2), 
+                                 PushButton(44, CUISINE_1),
+                                 PushButton(45, CUISINE_2),
+                                 PushButton(46, CUISINE_3),
+                                 PushButton(47, CUISINE_4),
+                                 PushButton(48, HALL_1),
+                                 PushButton(49, HALL_2),
+                                 PushButton(50, HALL_3),
+                                 PushButton(51, HALL_4),
+                                 PushButton(52, TOILETTE_1),
+                                 PushButton(53, TOILETTE_2),
                                  };
 
 char inData[32];
 char inChar = -1;
 byte index = 0;
 
-unsigned long dhtTime = 0;
+//unsigned long dhtTime = 0;
 
 // Init the DS3231 using the hardware interface
 DS3231  rtc(SDA, SCL);
 
-DHT dht(DHTPIN, DHTTYPE);
+//DHT dht(DHTPIN, DHTTYPE);
 
 Time t;
 unsigned long sendTime = 0;
@@ -104,16 +98,17 @@ void setup()
   Serial1.begin(115200);
 
   // Initialize the rtc object
-  rtc.begin();
+  //rtc.begin();
 
   // Initialize the DHT object
-  dht.begin();
+  //dht.begin();
   
   // The following lines can be uncommented to set the date and time
   //rtc.setDOW(SUNDAY);     // Set Day-of-Week to SUNDAY
   //rtc.setTime(12, 8, 0);     // Set the time to 12:00:00 (24hr format)
   //rtc.setDate(20, 11, 2016);   // Set the date to January 1st, 2014
-
+  
+  for(int i = 0; i < NBRRELAI; ++i) relay[i].begin();
   for(int i = 0; i < NBRSW; ++i) pushButton[i].setCallback(on_pushButton_pushed);
 }
 
@@ -123,7 +118,7 @@ void loop()
 
   for(int i = 0; i < NBRSW; ++i) pushButton[i].read();
 
-  if (dhtTime + 4000 < millis()) { // Max every 2 sec
+/*  if (dhtTime + 4000 < millis()) { // Max every 2 sec
     float h = dht.readHumidity();
     float t = dht.readTemperature();
     if (isnan(h) || isnan(t)) {
@@ -145,7 +140,7 @@ void loop()
       Serial.println(" °C");
     }
     dhtTime = millis();
-  }
+  }*/
 
   if (Serial1.available()) {
     int inByte = Serial1.read();
@@ -156,22 +151,40 @@ void loop()
 
 void on_pushButton_pushed(int id)
 {
-  Serial.print("pushButton ");
-  Serial.print(id);
-  Serial.println(" pressed");
+  //Serial.print("pushButton ");
+  //Serial.print(id);
+  //Serial.println(" pressed");
   switch (id) {
-    case SALON_HALL:
-    case SALON_CUISINE:
-      relay[SALON_DEVANT].invertState();
-      relay[SALON_MILIEU].invertState();
-      relay[SALON_ARRIERE].invertState();
+    case SALON_1:
+      relay[SALON].invertState();
       break;
-    case HALL:
+    case SALON_2:
+      Serial.print("SALON_2 pressed ");
+      Serial.print("CUISINE_CENTRAL "); Serial.print(relay[CUISINE_CENTRAL].getState());
+      if (relay[CUISINE_CENTRAL].getState() || relay[CUISINE_PLAN_DE_TRAVAIL].getState()) {
+        Serial.println(" turn off");
+         relay[CUISINE_CENTRAL].turnOff();
+         relay[CUISINE_PLAN_DE_TRAVAIL].turnOff();
+      } else {
+        Serial.println(" turn on");
+        relay[CUISINE_CENTRAL].turnOn();
+         relay[CUISINE_PLAN_DE_TRAVAIL].turnOn();        
+      }
+      break;
+    case CUISINE_1:
+      relay[SALON].invertState();
+      break;
+    case CUISINE_2:
+      relay[EXTERIEUR_JARDIN].invertState();
+      break;
+    case CUISINE_3:
+      relay[CUISINE_CENTRAL].invertState();
+      break;
+    case CUISINE_4:
+      relay[CUISINE_PLAN_DE_TRAVAIL].invertState();
+      break;
+    case HALL_1:
       relay[HALL_BAS].invertState();
-      relay[HALL_VESTIAIRE].invertState();
-      break;
-    case CUISINE:
-      relay[CUISINE].invertState();
       break;        
     default:
       // if nothing else matches, do the default
@@ -211,18 +224,18 @@ void processCmd() {
       int id = atoi(charId);
       //Serial.write("id "); Serial.print(id);
       if (0 <= id && id <= NBRRELAI && inData[9] == 'o' && inData[10] == 'n') {
-        relay[id].setState(true);
+        relay[id].turnOn();
         //Serial.write(" on");
       }
       if (0 <= id && id <= NBRRELAI && inData[9] == 'o' && inData[10] == 'f' && inData[11] == 'f') {
-        relay[id].setState(false);
+        relay[id].turnOff();
         //Serial.write (" off");
       }
       //Serial.println("");
     }
   } 
   // cmd: &get time$
-  else if (inData[0] == 'g' && inData[1] == 'e' && inData[2] == 't' && inData[3] == ' ' && inData[4] == 't'
+/*  else if (inData[0] == 'g' && inData[1] == 'e' && inData[2] == 't' && inData[3] == ' ' && inData[4] == 't'
              && inData[5] == 'i' && inData[6] == 'm' && inData[7] == 'e'){
     t = rtc.getTime();
   
@@ -250,7 +263,7 @@ void processCmd() {
                   rtc.setTime(newHour, newMinute, newSec);
                   Serial.write("new time "); Serial.print(newHour); Serial.write(":");Serial.print(newMinute); Serial.write(":");Serial.print(newSec); Serial.println("");
               }
-  }
+  }*/
 }
 
 double dewPoint(double celsius, double humidity)
