@@ -197,7 +197,8 @@ void Daemon::run()
     m_heatingListModel->addHeating("Fête", "3");
     m_heatingListModel->addHeating("Absent", "4");
     m_heatingState = "1";
-    m_cron = new QCron("22 15 * * 1-5 *");
+    // Test
+    m_cron = new QCron("26-30 13 * * 7 *");
 
     connect(m_cron, &QCron::activated, this, &Daemon::cronJob);
 
