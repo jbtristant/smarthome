@@ -25,13 +25,19 @@ SOURCES += \
         common.cpp \
         data/listmodel.cpp \
         data/heatingitem.cpp \
-        heatingstate.cpp
+        heatingstate.cpp \
+        libraries/PushButton/pushbutton.cpp \
+        libraries/Relay/relay.cpp \
+        libraries/SmartHome/smarthome.cpp
 
 HEADERS += \
         common.h \
         data/listmodel.h \
         data/heatingitem.h \
-        heatingstate.h
+        heatingstate.h \
+        libraries/PushButton/pushbutton.h \
+        libraries/Relay/relay.h \
+        libraries/SmartHome/smarthome.h
 
 unix {
     target.path = /usr/lib

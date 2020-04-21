@@ -1,0 +1,4 @@
+PushButton	KEYWORD1
+setState	KEYWORD2
+getState	KEYWORD2
+

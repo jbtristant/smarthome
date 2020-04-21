@@ -1,4 +1,3 @@
-
 // DS3231_Serial_Easy
 // Copyright (C)2015 Rinky-Dink Electronics, Henning Karlsen. All right reserved
 // web: http://www.RinkyDinkElectronics.com/
@@ -44,15 +43,15 @@
 #define TOILETTE_1     10
 #define TOILETTE_2     11
 
-#define DHTPIN 31
+#define SALON_DHT_PIN 2
 #define DHTTYPE DHT22
 
-
+#include <Wire.h>
 #include <DS3231.h>
-//#include <DHT.h>
+#include <DHT.h>
 
 #include <pushbutton.h>
-#include <Relay.h>
+#include <relay.h>
 
 Relay relay[NBRRELAI] = { Relay(22), // SALON 
                           Relay(23), // HALL_BAS
@@ -60,7 +59,7 @@ Relay relay[NBRRELAI] = { Relay(22), // SALON
                           Relay(25), // CUISINE_PLAN_DE_TRAVAIL
                           Relay(26), // EXTERIEUR_JARDIN
                           Relay(27), // EXTERIEUR_DEVANT 
-                          Relay(28) // CAVE
+                          Relay(28)  // CAVE
                           };
 
 PushButton pushButton[NBRSW] = { PushButton(42, SALON_1), 
@@ -79,37 +78,40 @@ PushButton pushButton[NBRSW] = { PushButton(42, SALON_1),
 
 char inData[32];
 char inChar = -1;
-byte index = 0;
+byte arraySize = 0;
 
-//unsigned long dhtTime = 0;
+char inData2[32];
+char inChar2 = -1;
+byte arraySize2 = 0;
+
+unsigned long dhtTime = 0;
+unsigned long clockTime = 0;
 
 // Init the DS3231 using the hardware interface
-DS3231  rtc(SDA, SCL);
+DS3231 Clock;
+bool Century, H12 = false, PM;
 
-//DHT dht(DHTPIN, DHTTYPE);
 
-Time t;
-unsigned long sendTime = 0;
+DHT salondht(SALON_DHT_PIN, DHTTYPE);
+
 
 void setup()
 {
   // Setup Serial connection
   Serial.begin(115200);
   Serial1.begin(115200);
+  Serial2.begin(115200); // Grenier     // TX2: 17 (jaune) <-> RX2:16 (blanc)
 
-  // Initialize the rtc object
-  //rtc.begin();
-
-  // Initialize the DHT object
-  //dht.begin();
-  
+  salondht.begin();
+ 
   // The following lines can be uncommented to set the date and time
-  //rtc.setDOW(SUNDAY);     // Set Day-of-Week to SUNDAY
-  //rtc.setTime(12, 8, 0);     // Set the time to 12:00:00 (24hr format)
+  Wire.begin();
+  //clock.setDOW(SUNDAY);     // Set Day-of-Week to SUNDAY
+  //clock.setTime(12, 8, 0);     // Set the time to 12:00:00 (24hr format)
   //rtc.setDate(20, 11, 2016);   // Set the date to January 1st, 2014
   
   for(int i = 0; i < NBRRELAI; ++i) relay[i].begin();
-  for(int i = 0; i < NBRSW; ++i) pushButton[i].setCallback(on_pushButton_pushed);
+  for(int i = 0; i < NBRSW; ++i) pushButton[i].setCallbackClicked(on_pushButton_pushed);
 }
 
 void loop()
@@ -118,29 +120,57 @@ void loop()
 
   for(int i = 0; i < NBRSW; ++i) pushButton[i].read();
 
-/*  if (dhtTime + 4000 < millis()) { // Max every 2 sec
-    float h = dht.readHumidity();
-    float t = dht.readTemperature();
+  if (dhtTime + 4000 < millis()) { // Max every 4 sec
+    float h = salondht.readHumidity();
+    float t = salondht.readTemperature();
     if (isnan(h) || isnan(t)) {
-      Serial.println("Failed to read from DHT sensor!");
+      Serial.println("Failed to read from salon DHT sensor!");
     } else {
-      float hi = dht.computeHeatIndex(t, h, false);
+      float hi = salondht.computeHeatIndex(t, h, false);
       float dp = dewPoint(t, h);
       Serial.print("Salon Humidity: ");
       Serial.print(h);
       Serial.print(" %\t");
-      Serial.print("Salon Temperature: ");
+      Serial.print("Temperature: ");
       Serial.print(t);
       Serial.print(" °C\t");
-      Serial.print("Salon Heat index: ");
+      Serial.print("Heat index: ");
       Serial.print(hi);
       Serial.print(" °C\t");
-      Serial.print("Salon Dew point: ");
+      Serial.print("Dew point: ");
       Serial.print(dp);
       Serial.println(" °C");
     }
     dhtTime = millis();
-  }*/
+  }
+
+  if (clockTime + 1000 < millis()) { // Every sec
+    Serial.print(dayOfTheWeektoChar(Clock.getDoW()));
+    Serial.print(' ');
+    Serial.print(Clock.getDate(), DEC);
+    Serial.print('/');
+    Serial.print(Clock.getMonth(Century), DEC);
+    Serial.print('/');
+    Serial.print(Clock.getYear() + 2000, DEC);
+    Serial.print(' ');
+    Serial.print(Clock.getHour(H12, PM), DEC);
+    Serial.print(':');
+    Serial.print(Clock.getMinute(), DEC);
+    Serial.print(':');
+    Serial.print(Clock.getSecond(), DEC);
+    Serial.print(" Temperature: ");
+    Serial.print(Clock.getTemperature());
+    Serial.print(" °C");
+    Serial.println();
+    clockTime = millis();
+  /*
+    Serial.print(" since midnight 1/1/1970 = ");
+    Serial.print(now.unixtime());
+    Serial.print("s = ");
+    Serial.print(now.unixtime() / 86400L);
+    Serial.println("d");
+  */
+  }
 
   if (Serial1.available()) {
     int inByte = Serial1.read();
@@ -185,7 +215,16 @@ void on_pushButton_pushed(int id)
       break;
     case HALL_1:
       relay[HALL_BAS].invertState();
+      break;    
+    case HALL_2:
+      Serial2.println("&relay 12 invertState$");
       break;        
+    case HALL_3:
+      Serial2.println("&relay 10 invertState$");
+      break;
+    case HALL_4:
+      
+      break;
     default:
       // if nothing else matches, do the default
       // default is optional
@@ -195,75 +234,150 @@ void on_pushButton_pushed(int id)
 
 void processMessage() {
   while (Serial.available() > 0) {
-    if (index < 31) // One less than the size of the array
+    if (arraySize < 31) // One less than the size of the array
     {
       inChar = Serial.read(); // Read a character
       if (inChar == '&') {
-        index = 0;
+        arraySize = 0;
         return;
       }
       if (inChar == '$') {
-        inData[index] = '\0';
-        processCmd();
+        inData[arraySize] = '\0';
+        processCmd(inData, arraySize);
       }
-      inData[index] = inChar; // Store it
-      index++; // Increment where to write next
-      inData[index] = '\0'; // Null terminate the string
+      inData[arraySize] = inChar; // Store it
+      arraySize++; // Increment where to write next
+      inData[arraySize] = '\0'; // Null terminate the string
     } else {
-      index = 0;
+      arraySize = 0;
+    }
+  }
+    while (Serial2.available() > 0) {
+    if (arraySize2 < 31) // One less than the size of the array
+    {
+      inChar2 = Serial2.read(); // Read a character
+      if (inChar2 == '&') {
+        arraySize2 = 0;
+        return;
+      }
+      if (inChar2 == '$') {
+        inData2[arraySize2] = '\0';
+        processCmd(inData2, arraySize2);
+      }
+      inData2[arraySize2] = inChar2; // Store it
+      arraySize2++; // Increment where to write next
+      inData2[arraySize2] = '\0'; // Null terminate the string
+    } else {
+      arraySize2 = 0;
     }
   }
 }
 
-void processCmd() {
+void processCmd(char data[], byte size) {
   //Serial.println(inData);
   // cmd: &relay 8 on$
-  if (inData[0] == 'r' && inData[1] == 'e' && inData[2] == 'l' && inData[3] == 'a' && inData[4] == 'y') {
-    if (isDigit(inData[6]) && isDigit(inData[7])) {
-      char charId[3] = {inData[6], inData[7]};
+  if (data[0] == 'r' && data[1] == 'e' && data[2] == 'l' && data[3] == 'a' && data[4] == 'y') {
+    if (isDigit(data[6]) && isDigit(data[7])) {
+      char charId[3] = {data[6], data[7]};
       int id = atoi(charId);
       //Serial.write("id "); Serial.print(id);
-      if (0 <= id && id <= NBRRELAI && inData[9] == 'o' && inData[10] == 'n') {
+      if (0 <= id && id <= NBRRELAI && data[9] == 'o' && data[10] == 'n') {
         relay[id].turnOn();
         //Serial.write(" on");
       }
-      if (0 <= id && id <= NBRRELAI && inData[9] == 'o' && inData[10] == 'f' && inData[11] == 'f') {
+      if (0 <= id && id <= NBRRELAI && data[9] == 'o' && data[10] == 'f' && data[11] == 'f') {
         relay[id].turnOff();
         //Serial.write (" off");
       }
+      if (0 <= id && id <= NBRRELAI && data[9] == 'i' && data[10] == 'n' && data[11] == 'v' &&
+          data[12] == 'e' && data[13] == 'r' && data[14] == 't' && data[15] == 'S' && data[16] == 't' && 
+          data[17] == 'a' && data[18] == 't' && data[19] == 'e') {
+            relay[id].invertState();
+      }
       //Serial.println("");
     }
-  } 
+  }
+  // cmd &relay state$
+  if (data[0] == 'r' && data[1] == 'e' && data[2] == 'l' && data[3] == 'a' && data[4] == 'y' &&
+       data[5] == ' ' && data[6] == 's' && data[7] == 't' && data[8] == 'a' && data[9] == 't' && data[10] == 'e') {
+        sendAllRelayState();
+       } 
   // cmd: &get time$
-/*  else if (inData[0] == 'g' && inData[1] == 'e' && inData[2] == 't' && inData[3] == ' ' && inData[4] == 't'
-             && inData[5] == 'i' && inData[6] == 'm' && inData[7] == 'e'){
-    t = rtc.getTime();
-  
-    // Send Day-of-Week
-    Serial.print(rtc.getDOWStr());
-    Serial.print(" ");
-  
-    // Send date
-    Serial.print(rtc.getDateStr());
-    Serial.print(" -- ");
+  else if (data[0] == 'g' && data[1] == 'e' && data[2] == 't' && data[3] == ' ' && data[4] == 't'
+             && data[5] == 'i' && data[6] == 'm' && data[7] == 'e'){
 
-    // Send time
-    Serial.println(rtc.getTimeStr());
+    Serial.print(Clock.getDate(), DEC);
+    Serial.print('/');
+    Serial.print(Clock.getMonth(Century), DEC);
+    Serial.print('/');
+    Serial.print(Clock.getYear() + 2000, DEC);
+    Serial.print(' ');
+    Serial.print(Clock.getHour(H12, PM), DEC);
+    Serial.print(':');
+    Serial.print(Clock.getMinute(), DEC);
+    Serial.print(':');
+    Serial.print(Clock.getSecond(), DEC);
+    Serial.println();
   }
   // cmd: &set time 16:47:30$
-  else if (inData[0] == 's' && inData[1] == 'e' && inData[2] == 't' && inData[3] == ' ' && inData[4] == 't'
-             && inData[5] == 'i' && inData[6] == 'm' && inData[7] == 'e'){
-                if (isDigit(inData[9]) && isDigit(inData[10]) && isDigit(inData[12]) && isDigit(inData[13]) && isDigit(inData[15]) && isDigit(inData[16])) {
-                  char charHour[3] = {inData[9], inData[10]};
+  else if (data[0] == 's' && data[1] == 'e' && data[2] == 't' && data[3] == ' ' && data[4] == 't'
+             && data[5] == 'i' && data[6] == 'm' && data[7] == 'e'){
+                if (isDigit(data[9]) && isDigit(data[10]) && isDigit(data[12]) && isDigit(data[13]) && isDigit(data[15]) && isDigit(data[16])) {
+                  char charHour[3] = {data[9], data[10]};
                   int newHour = atoi(charHour);
-                  char charMinute[3] = {inData[12], inData[13]};
+                  char charMinute[3] = {data[12], data[13]};
                   int newMinute = atoi(charMinute);
-                  char charSec[3] = {inData[15], inData[16]};
+                  char charSec[3] = {data[15], data[16]};
                   int newSec = atoi(charSec);
-                  rtc.setTime(newHour, newMinute, newSec);
+                  Clock.setHour(newHour);
+                  Clock.setMinute(newMinute);
+                  Clock.setSecond(newSec);
                   Serial.write("new time "); Serial.print(newHour); Serial.write(":");Serial.print(newMinute); Serial.write(":");Serial.print(newSec); Serial.println("");
               }
-  }*/
+  }
+  // cmd: &set date 30/04/20$ // DD/MM/YY
+  else if (data[0] == 's' && data[1] == 'e' && data[2] == 't' && data[3] == ' ' 
+             && data[4] == 'd' && data[5] == 'a' && data[6] == 't' && data[7] == 'e'){
+                if (isDigit(data[9]) && isDigit(data[10]) && isDigit(data[12]) && isDigit(data[13]) && isDigit(data[15]) && isDigit(data[16])) {
+                  char charDay[3] = {data[9], data[10]};
+                  int newDay = atoi(charDay);
+                  char charMonth[3] = {data[12], data[13]};
+                  int newMonth = atoi(charMonth);
+                  char charYear[3] = {data[15], data[16]};
+                  int newYear = atoi(charYear);
+                  Clock.setDate(newDay);
+                  Clock.setMonth(newMonth);
+                  Clock.setYear(newYear);
+                  newYear += 2000;
+                  Serial.write("new date "); Serial.print(newDay); Serial.write("/");Serial.print(newMonth); Serial.write("/");Serial.print(newYear); Serial.println("");
+              }
+  }
+  // cmd: &set DoW 1$ // Day of the Week (1-7)
+  else if (data[0] == 's' && data[1] == 'e' && data[2] == 't' && data[3] == ' ' 
+             && data[4] == 'D' && data[5] == 'o' && data[6] == 'W'){
+                if (isDigit(data[8])) {
+                  char charDoW[1] = {data[8]};
+                  int doW = atoi(charDoW);
+                  Clock.setDoW(doW);
+                  Serial.write("new day of the week "); Serial.println(Clock.getDoW(), DEC);
+              }
+  }
+}
+
+void sendAllRelayState()
+{
+  for(int i = 0; i < NBRRELAI; ++i) {
+    sendRelayState(i);
+  }
+}
+
+void sendRelayState(int id)
+{
+   if (relay[id].getState()) {
+      Serial.print("relay ");   Serial.print(id); Serial.println(" on");
+   } else {
+      Serial.print("relay ");   Serial.print(id); Serial.println(" off");
+   }
 }
 
 double dewPoint(double celsius, double humidity)
@@ -283,3 +397,35 @@ double dewPoint(double celsius, double humidity)
   double T = log(VP / 0.61078); // temp var
   return (241.88 * T) / (17.558 - T);
 }
+
+const char* dayOfTheWeektoChar(int DoW)
+{
+  switch (DoW) {
+    case 1:
+    return "Monday";
+    break;
+    case 2:
+    return "Tuesday";
+    break;
+    case 3:
+    return "Wednesday";
+    break;
+    case 4:
+    return "Thursday";
+    break;
+    case 5:
+    return "Friday";
+    break;
+    case 6:
+    return "Saturday";
+    break;
+    case 7:
+    return "Sunday";
+    break;
+    default:
+    return "";
+    break;
+  }
+}
+
+
