@@ -37,7 +37,7 @@ public:
         RelayNamesEnumSize       = 21
     };
 
-    Relay();
+    Relay(int pin);
     Relay(int cardId, int pin, RelayEnums id);
     void begin();
     bool getState();

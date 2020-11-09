@@ -1,6 +1,12 @@
 #include "relay.h"
 
-Relay::Relay(){}
+Relay::Relay(int pin)
+{
+	m_cardId = 0;
+	m_pin = pin;
+	m_id = 0;
+	m_state = false;
+}
 
 Relay::Relay(int cardId, int pin, RelayEnums id)
 {

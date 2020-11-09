@@ -1,6 +1,6 @@
 
 
-#define NBRRELAI                 14
+#define NBRRELAI                 15
 
 // Define my lights
 #define CHAMBRE_JB_GAUCHE         0
@@ -16,7 +16,8 @@
 #define VESTIAIRE                10
 #define GARAGE                   11
 #define HALL_HAUT                12
-#define BUANDERIE                13 
+#define BUANDERIE                13
+#define SALLE_DE_DOUCHE_MUSIQUE  14 
 
 #define NBRSW                        24
 // Define my light switch
@@ -72,7 +73,8 @@ Relay relay[NBRRELAI] = { Relay(4),  // CHAMBRE_JB_GAUCHE
                           Relay(22), // VESTIAIRE
                           Relay(23), // GARAGE
                           Relay(24), // HALL_HAUT
-                          Relay(25)  // BUANDERIE
+                          Relay(25), // BUANDERIE
+                          Relay(26)  // SALLE_DE_DOUCHE_MUSIQUE
                           };
 
 PushButton pushButton[NBRSW] = { PushButton(31, SALLE_DE_DOUCHE_MIRROIR_1),
@@ -217,6 +219,7 @@ void on_pushButton_pushed(int id)
      case SALLE_DE_DOUCHE_MIRROIR_2:
      case SALLE_DE_DOUCHE_DOUCHE_2:
         relay[SALLE_DE_DOUCHE_DOUCHE].invertState();
+        relay[SALLE_DE_DOUCHE_MUSIQUE].invertState();
         break;
      case DRESSING_2:
         relay[DRESSING].invertState();
